@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .serializers import UserSerializer
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 User = get_user_model()
 
@@ -45,3 +47,31 @@ class UserView(APIView):
             return Response({"user": user.data}, status=status.HTTP_200_OK)
         except:
             return Response({"error": "ユーザーの取得に問題が発生しました"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# サブスク定額請求
+class SubscriptionView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            print("SubscriptionView")
+            print(request.data)
+            email = request.data["email"]
+            customer_id = request.data["customer_id"]
+            created = request.data["created"]
+            user_data = User.objects.filter(customer_id=customer_id)
+            if len(user_data):
+                user_data = user_data[0]
+            else:
+                user_data = User.objects.get(email=email)
+                user_data.customer_id = customer_id
+            created = datetime.fromtimestamp(created)
+            # 有効期限は１ヶ月後を設定
+            user_data.current_period_end = created + relativedelta(months=1)
+            user_data.save()
+
+            return Response({"success": "サブスク有効期限の更新に成功しました"}, status=status.HTTP_200_OK)
+
+        except:
+            return Response({"error": "サブスク有効期限の更新に失敗しました"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

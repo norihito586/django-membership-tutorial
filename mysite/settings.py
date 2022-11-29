@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-t*x0)y+&=98n9n4o8b9gc33pr@4&e@=^-z)4c+8y8q%^cp^#)_"
+env = environ.Env()
+env.read_env(os.path.join(BASE_DIR, ".env"))
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,7 +34,7 @@ ALLOWED_HOSTS = ["*"]
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
 ]
-
+APPEND_SLASH = False
 # Application definition
 
 INSTALLED_APPS = [
